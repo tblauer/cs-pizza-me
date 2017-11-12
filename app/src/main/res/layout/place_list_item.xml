@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <variable
+            name="placeItemViewModel"
+            type="com.tblauer.pizzame.viewmodel.PlaceItemViewModel">
+        </variable>
+
+        <variable
+            name="sharedViewModel"
+            type="com.tblauer.pizzame.viewmodel.SharedViewModel">
+        </variable>
+    </data>
+
+    <RelativeLayout
+        android:id="@+id/place_item_top_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true">
+   <!--     android:onClick="@sharedViewModel::onItemClicked">
+        android:onClick="@{(theView) -> sharedViewModel.itemSelected(theView, placeItemViewModel.pizzaPlace)}">  -->
+
+        <TextView
+            android:id="@+id/name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="12dp"
+            android:text="@{placeItemViewModel.name}"
+            style="@style/PlaceListItemTitleText"/>
+
+        <LinearLayout
+            android:id="@+id/info_line"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/name_tv"
+            android:layout_marginTop="4dp"
+            android:layout_alignParentStart="true"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/score_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{placeItemViewModel.averageRatingStr}" />
+
+            <RatingBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:id="@+id/rating_bar"
+                android:stepSize=".25"
+                style="@style/ScoreRatingBar"
+                android:rating="@{placeItemViewModel.averageRating}"/>
+
+            <TextView
+                android:id="@+id/num_ratings_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="6dp"
+                android:text="@{placeItemViewModel.numRatingsStr}" />
+
+            <TextView
+                android:id="@+id/distance_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="@{placeItemViewModel.distanceStr}" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/address_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/info_line"
+            android:layout_marginTop="4dp"
+            android:text="@{placeItemViewModel.address}" />
+
+        <TextView
+            android:id="@+id/city_state_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/address_tv"
+            android:text="@{placeItemViewModel.cityAndState}"/>
+
+        <TextView
+            android:id="@+id/phone_num_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/city_state_tv"
+            android:text="@{placeItemViewModel.phoneNumber}"/>
+
+    </RelativeLayout>
+</layout>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="placesViewModel"
+            type="com.tblauer.pizzame.viewmodel.PlacesViewModel">
+        </variable>
+        <variable
+            name="sharedViewModel"
+            type="com.tblauer.pizzame.viewmodel.SharedViewModel">
+        </variable>
+    </data>
+
+    <FrameLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin">
+
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_gravity="center"
+            android:visibility="@{placesViewModel.progressVisible}"/>
+
+        <LinearLayout
+            android:id="@+id/no_places_found_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center"
+            android:visibility="@{placesViewModel.emptyLayoutVisible}">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/no_places_visible_str"
+                style="@style/NoPlacesFoundText"/>
+        </LinearLayout>
+
+
+
+        <android.support.design.widget.CoordinatorLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+    <!--    <android.support.v4.widget.SwipeRefreshLayout
+
+            android:id="@+id/swipeRefreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">  -->
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/places_recycler_view"
+                android:scrollbars="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="@{placesViewModel.recyclerViewVisible}">
+            </android.support.v7.widget.RecyclerView>
+
+    <!--    </android.support.v4.widget.SwipeRefreshLayout>  -->
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="@dimen/fab_margin"
+                app:srcCompat="@drawable/ic_refresh_black_36px"
+                android:tint="@android:color/white"
+                android:onClick="@{() -> placesViewModel.onFABRefreshCalled()}"/>
+
+        </android.support.design.widget.CoordinatorLayout>
+
+    </FrameLayout>
+</layout>
