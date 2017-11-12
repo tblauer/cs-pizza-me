@@ -10,7 +10,7 @@
     <string name="no_places_visible_suggestions_str">Suggestions:  Make sure locations are enabled and you have a network connection</string>
 
     <!-- Place list Strings -->
-    <string name="num_ratings_format">"(%s)</string>
+    <string name="num_ratings_format">(%s)</string>
     <string name="distance_with_abbreviated_units_format">%.2f mi</string>
     <string name="city_state_format">%s, %s</string>
 

@@ -1,5 +1,6 @@
 package com.tblauer.pizzame.viewmodel;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.tblauer.pizzame.model.PizzaPlace;
@@ -7,10 +8,19 @@ import com.tblauer.pizzame.model.PizzaPlace;
 
 public class PizzaPlaceDisplayUtils {
 
-    // All methods are static, no need for a constructor
+    //-------------------------------------------------------------------------
+    // Member variables
+
     private static final String EMPTY_STR = "";
 
+    //-------------------------------------------------------------------------
+    // Private constructor
+
+    // All methods are static, no need for a constructor
     private PizzaPlaceDisplayUtils() {}
+
+    //-------------------------------------------------------------------------
+    // Static methods
 
     public static String getName(PizzaPlace pizzaPlace) {
         if (pizzaPlace != null) {
@@ -36,8 +46,8 @@ public class PizzaPlaceDisplayUtils {
         return String.valueOf(getAverageRating(pizzaPlace));
     }
 
-    public static String getFormattedNumRatingsStr(PizzaPlace pizzaPlace, String formatStr) {
-        if (pizzaPlace != null && formatStr != null) {
+    public static String getFormattedNumRatingsStr(PizzaPlace pizzaPlace, @NonNull String formatStr) {
+        if (pizzaPlace != null) {
             PizzaPlace.PlaceRating rating = pizzaPlace.getRating();
             if (rating != null) {
                 return String.format(formatStr,rating.getNumRatings());
@@ -46,8 +56,8 @@ public class PizzaPlaceDisplayUtils {
         return String.valueOf(0);
     }
 
-    public static String getFormattedNumReviewsStr(PizzaPlace pizzaPlace, String format) {
-        if (pizzaPlace != null && format != null) {
+    public static String getFormattedNumReviewsStr(PizzaPlace pizzaPlace, @NonNull String format) {
+        if (pizzaPlace != null) {
             PizzaPlace.PlaceRating rating = pizzaPlace.getRating();
             if (rating != null) {
                 return String.format(format, rating.getNumReviews());
@@ -56,8 +66,8 @@ public class PizzaPlaceDisplayUtils {
         return String.valueOf(0);
     }
 
-    public static String getFormattedDistanceStr(PizzaPlace pizzaPlace, String formatStr) {
-        if (pizzaPlace != null && formatStr != null) {
+    public static String getFormattedDistanceStr(PizzaPlace pizzaPlace, @NonNull String formatStr) {
+        if (pizzaPlace != null) {
             return String.format(formatStr, pizzaPlace.getDistance());
         }
         return String.valueOf(0);
@@ -77,15 +87,15 @@ public class PizzaPlaceDisplayUtils {
         return EMPTY_STR;
     }
 
-    public static String getFormattedCityAndState(PizzaPlace pizzaPlace, String formatStr) {
-        if (pizzaPlace != null && formatStr != null) {
+    public static String getFormattedCityAndState(PizzaPlace pizzaPlace, @NonNull String formatStr) {
+        if (pizzaPlace != null) {
             return String.format(formatStr, pizzaPlace.getCity(), pizzaPlace.getState());
         }
         return EMPTY_STR;
     }
 
-    public static String getFormattedAddressCityState(PizzaPlace pizzaPlace, String formatStr) {
-        if (pizzaPlace != null && formatStr != null) {
+    public static String getFormattedAddressCityState(PizzaPlace pizzaPlace, @NonNull String formatStr) {
+        if (pizzaPlace != null) {
             return String.format(formatStr, pizzaPlace.getAddress(), pizzaPlace.getCity(), pizzaPlace.getState());
         }
         return EMPTY_STR;

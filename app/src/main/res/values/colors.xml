@@ -6,5 +6,9 @@
 
     <color name="star_yellow">#FABC3C</color>
 
+
+    <color name="light_grey">#C7C7CC</color>
+    <color name="darker_grey">#929292</color>
+
     <color name="simple_icon_color">#0000ff</color>
 </resources>

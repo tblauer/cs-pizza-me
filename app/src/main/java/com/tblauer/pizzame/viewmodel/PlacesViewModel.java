@@ -5,8 +5,6 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 
-
-import android.databinding.ObservableBoolean;
 import android.databinding.ObservableInt;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -42,12 +40,10 @@ public class PlacesViewModel extends AndroidViewModel {
     private final ObservableInt _emptyViewVisible = new ObservableInt(View.VISIBLE);
 //    private final ObservableBoolean _swipedToRefresh = new ObservableBoolean(false);
 
-    private MutableLiveData<Location> _currentLocation = new MutableLiveData<Location>();
-    private MutableLiveData<Boolean> _locationRequested = new MutableLiveData<Boolean>();
- //   private MutableLiveData<Boolean> _swipedToRefresh = new MutableLiveData<Boolean>();
+    private MutableLiveData<Location> _currentLocation = new MutableLiveData<>();
+    private MutableLiveData<Boolean> _locationRequested = new MutableLiveData<>();
 
-
-    private MutableLiveData<List<PizzaPlace>> _pizzaPlaces = new MutableLiveData<List<PizzaPlace>>();
+    private MutableLiveData<List<PizzaPlace>> _pizzaPlaces = new MutableLiveData<>();
 
 
     private final String LOG_TAG = getClass().getName();
@@ -68,9 +64,7 @@ public class PlacesViewModel extends AndroidViewModel {
 
     public LiveData<List<PizzaPlace>> getPizzaPlaces() {
         if (_pizzaPlaces == null) {
-            _pizzaPlaces = new MutableLiveData<List<PizzaPlace>>();
-       //     List<PizzaPlace> empty = new ArrayList<PizzaPlace>();
-       //     _pizzaPlaces.setValue(empty);
+            _pizzaPlaces = new MutableLiveData<>();
         }
         return _pizzaPlaces;
     }
@@ -96,7 +90,7 @@ public class PlacesViewModel extends AndroidViewModel {
     public void setCurrentLocation(Location location) {
 
             _currentLocation.setValue(location);
-            if (_locationRequested.getValue() || (_pizzaPlaces.getValue() == null) || (_pizzaPlaces.getValue().isEmpty())) {
+            if ((_locationRequested.getValue() != null &&_locationRequested.getValue()) || (_pizzaPlaces.getValue() == null) || (_pizzaPlaces.getValue().isEmpty())) {
                 if (location != null) {
                     refreshPizzaPlaces(_currentLocation.getValue());
                 }
@@ -178,7 +172,7 @@ public class PlacesViewModel extends AndroidViewModel {
         public void onErrorResponse(VolleyError error) {
             // We should alert the user if this is an error they can do anything about
 
-            // Stop displayig progress
+            // Stop displaying progress
             setProgressVisibility(false);
             Log.d(LOG_TAG, error.getLocalizedMessage(), error.getCause());
         }
@@ -196,6 +190,7 @@ public class PlacesViewModel extends AndroidViewModel {
                 Type collectionType = new TypeToken<List<PizzaPlace>>(){}.getType();
                 GsonBuilder builder = new GsonBuilder();
                 Gson gson = builder.create();
+                String resultsArrayStr = resultsArray.toString();
                 List<PizzaPlace> pizzaPlaces = gson.fromJson(resultsArray.toString(), collectionType);
                 // The response comes back on the UI thread, so we call setValue
                 // If it was in the background thread, we would call postValue

@@ -51,15 +51,15 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:id="@+id/rating_bar"
-                android:stepSize=".25"
-                style="@style/ScoreRatingBar"
+                android:theme="@style/ScoreRatingBar"
+                style="?attr/ratingBarStyleSmall"
                 android:rating="@{placeItemViewModel.averageRating}"/>
 
             <TextView
                 android:id="@+id/num_ratings_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="6dp"
+                android:layout_marginStart="6dp"
                 android:text="@{placeItemViewModel.numRatingsStr}" />
 
             <TextView

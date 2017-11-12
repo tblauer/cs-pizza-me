@@ -158,13 +158,14 @@ public class PermissionUtils {
                 rationaleResId = R.string.permission_location_rationale;
         }
 
-        for (int i = 0; i < permissions.length; i++) {
-            if (ContextCompat.checkSelfPermission(activity, permissions[i]) == PackageManager.PERMISSION_GRANTED) {
+
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED) {
                 // if the requested permission is part of a bundle of permissions requested, ensure that we put out
                 // no messages about it if it has already been granted.
                 continue;
             }
-            else if (view != null && ActivityCompat.shouldShowRequestPermissionRationale(activity, permissions[i])) {
+            else if (view != null && ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
                 // Provide a rationale to the user if the permission was not granted and the user would benefit
                 // from additional context for the use of the permission.
                 int snackbarLength = Snackbar.LENGTH_LONG;
@@ -210,13 +211,13 @@ public class PermissionUtils {
                 rationaleResId = R.string.permission_location_rationale;
         }
 
-        for (int i = 0; i < permissions.length; i++) {
-            if (ContextCompat.checkSelfPermission(fragmentContext, permissions[i]) == PackageManager.PERMISSION_GRANTED) {
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(fragmentContext, permission) == PackageManager.PERMISSION_GRANTED) {
                 // if the requested permission is part of a bundle of permissions requested, ensure that we put out
                 // no messages about it if it has already been granted.
                 continue;
             }
-            else if (view != null && fragment.shouldShowRequestPermissionRationale(permissions[i])) {
+            else if (view != null && fragment.shouldShowRequestPermissionRationale(permission)) {
                 // Provide a rationale to the user if the permission was not granted and the user would benefit
                 // from additional context for the use of the permission.
                 int snackbarLength = Snackbar.LENGTH_LONG;

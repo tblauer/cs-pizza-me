@@ -1,12 +1,19 @@
 package com.tblauer.pizzame.model;
 
 
+import android.support.annotation.NonNull;
+import android.support.annotation.VisibleForTesting;
+
 import com.google.gson.annotations.SerializedName;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
+/**
+ * PizzaPlace model
+ */
 public class PizzaPlace {
+    //------------------------------------------------------------------------
+    // Member variables
+
     @SerializedName("id")
     private String id = null;
 
@@ -40,8 +47,19 @@ public class PizzaPlace {
     @SerializedName("Rating")
     private PlaceRating _rating = null;
 
+    //------------------------------------------------------------------------
+    // Constructor
 
-    public PizzaPlace(String name, String address, String city, String state, String phone, double latitude, double longitude, float distance, String businessUrl, PlaceRating rating) {
+    public PizzaPlace(@NonNull String name,
+                      @NonNull String address,
+                      @NonNull String city,
+                      @NonNull String state,
+                      @NonNull String phone,
+                      double latitude,
+                      double longitude,
+                      float distance,
+                      String businessUrl,
+                      @NonNull PlaceRating rating) {
         _name = name;
         _address = address;
         _city = city;
@@ -53,6 +71,9 @@ public class PizzaPlace {
         _url = businessUrl;
         _rating = rating;
     }
+
+    //------------------------------------------------------------------------
+    // Class Methods
 
     public String getName() {
         return _name;
@@ -67,8 +88,13 @@ public class PizzaPlace {
     public String getBusinessUrl() { return _url; }
     public PlaceRating getRating() { return _rating; }
 
+    //-------------------------------------------------------------------------
+    // Private class for the Pizza Placd Rating model
 
-    public class PlaceRating {
+    public static class PlaceRating {
+
+        //----------------------------------------------------------------------
+        // Mamber variables
         @SerializedName("AverageRating")
         private float _averageRating = 0.0f;
 
@@ -84,13 +110,19 @@ public class PizzaPlace {
         @SerializedName("LastReviewIntro")
         private String _lastReviewIntro = null;
 
-        private PlaceRating(float avgRating, int numRatings, int numReviews, long lastReviewDate, String lastReviewIntro) {
+        //----------------------------------------------------------------------
+        // Constructor
+
+        public PlaceRating(float avgRating, int numRatings, int numReviews, long lastReviewDate, String lastReviewIntro) {
             _averageRating = avgRating;
             _numRatings = numRatings;
             _numReviews = numReviews;
             _lastReviewDate = lastReviewDate;
             _lastReviewIntro = lastReviewIntro;
         }
+
+        //----------------------------------------------------------------------
+        // Class methods
 
         public float getAverageRating() { return _averageRating; }
         public int getNumRatings() { return _numRatings; }

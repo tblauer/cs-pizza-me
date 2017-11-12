@@ -1,18 +1,15 @@
 package com.tblauer.pizzame.viewmodel;
 
-import android.app.Application;
-import android.arch.lifecycle.AndroidViewModel;
-
-import android.arch.lifecycle.ViewModel;
 import android.content.res.Resources;
 import android.databinding.BaseObservable;
 
 import com.tblauer.pizzame.R;
 import com.tblauer.pizzame.model.PizzaPlace;
 
-
-
 public class PlaceItemViewModel extends BaseObservable {
+
+    //-------------------------------------------------------------------------
+    // Member variables
 
     private PizzaPlace _pizzaPlace;
     private final String LOG_TAG = getClass().getName();
@@ -21,13 +18,18 @@ public class PlaceItemViewModel extends BaseObservable {
     private String _numRatingsFormatStr = null;
 
 
+    //-------------------------------------------------------------------------
+    // Constructor
+
     public PlaceItemViewModel(Resources resources) {
-     //   super(application);
-     //   Resources resources = application.getResources();
         _distanceFormatStr = resources.getString(R.string.distance_with_abbreviated_units_format);
         _cityStateFormatStr = resources.getString(R.string.city_state_format);
         _numRatingsFormatStr = resources.getString(R.string.num_ratings_format);
     }
+
+    //-------------------------------------------------------------------------
+    // Class methods
+
 
     // This will get called in the RecyclerView view binder
     public void setPizzaPlace(PizzaPlace pizzaPlace) {
@@ -35,9 +37,6 @@ public class PlaceItemViewModel extends BaseObservable {
         notifyChange();
     }
 
- //   public PizzaPlace getPizzaPlace() {
- //       return _pizzaPlace;
- //   }
 
     // Getters for DataBinding
     public String getName() {

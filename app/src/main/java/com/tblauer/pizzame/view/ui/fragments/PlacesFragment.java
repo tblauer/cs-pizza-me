@@ -292,7 +292,7 @@ public class PlacesFragment extends Fragment  {
                         LiveData<List<PizzaPlace>> pplaces = _viewModel.getPizzaPlaces();
                         if (pplaces.getValue() != null) {
                             PizzaPlace pplace = pplaces.getValue().get(position);
-                            binding.getSharedViewModel().onPizzaPlaceClicked(view, pplace);
+                            binding.getSharedViewModel().onPizzaPlaceClicked(pplace);
                         }
                     }
                 });
