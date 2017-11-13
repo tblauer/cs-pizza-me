@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:layout_gravity="center"
-            android:visibility="@{placesViewModel.progressVisible}"/>
+            android:visibility="@{placesViewModel.progressViewVisible}"/>
 
         <LinearLayout
             android:id="@+id/no_places_found_layout"

@@ -5,9 +5,12 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 
+import android.databinding.Observable;
+import android.databinding.ObservableBoolean;
 import android.databinding.ObservableInt;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 import android.view.View;
 
@@ -35,16 +38,25 @@ public class PlacesViewModel extends AndroidViewModel {
     private WebService _webService;
 
     // May have to create a new object that's LiveData that contains the items I want to make visible
-    private final ObservableInt _progressVisible = new ObservableInt(View.GONE);
-    private final ObservableInt _recyclerViewVisible = new ObservableInt(View.GONE);
-    private final ObservableInt _emptyViewVisible = new ObservableInt(View.VISIBLE);
-//    private final ObservableBoolean _swipedToRefresh = new ObservableBoolean(false);
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public final ObservableInt _progressViewVisible = new ObservableInt(View.GONE);
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public final ObservableInt _recyclerViewVisible = new ObservableInt(View.GONE);
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public final ObservableInt _emptyViewVisible = new ObservableInt(View.VISIBLE);
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public final ObservableBoolean _isInProgress = new ObservableBoolean(false);
 
-    private MutableLiveData<Location> _currentLocation = new MutableLiveData<>();
-    private MutableLiveData<Boolean> _locationRequested = new MutableLiveData<>();
+//    private MutableLiveData<Boolean> _swipedToRefresh = new MutableLiveData<>();
 
-    private MutableLiveData<List<PizzaPlace>> _pizzaPlaces = new MutableLiveData<>();
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public MutableLiveData<Location> _currentLocation = new MutableLiveData<>();
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public MutableLiveData<Boolean> _locationRequested = new MutableLiveData<>();
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public MutableLiveData<List<PizzaPlace>> _pizzaPlaces = new MutableLiveData<>();
 
     private final String LOG_TAG = getClass().getName();
 
@@ -53,9 +65,18 @@ public class PlacesViewModel extends AndroidViewModel {
 
     public PlacesViewModel(Application application) {
         super(application);
-        _webService = new WebService(application.getApplicationContext());
         _locationRequested.setValue(false);
+        _isInProgress.set(false);
  //       _swipedToRefresh.setValue(false);
+
+        // Listen for changes the isInProgress state and toggle the
+        // visibility for whatever progress is getting displayed
+        _isInProgress.addOnPropertyChangedCallback(new Observable.OnPropertyChangedCallback() {
+            @Override
+            public void onPropertyChanged(Observable observable, int i) {
+                setProgressVisibility(_isInProgress.get());
+            }
+        });
     }
 
     //-------------------------------------------------------------------------
@@ -75,17 +96,16 @@ public class PlacesViewModel extends AndroidViewModel {
 
 //   public LiveData<Boolean> getSwipedToRefresh() { return _swipedToRefresh; }
 
-    public ObservableInt getProgressVisible() {
-        return _progressVisible;
+    public ObservableInt getProgressViewVisible() {
+        return _progressViewVisible;
     }
-
     public ObservableInt getRecyclerViewVisible() {
         return _recyclerViewVisible;
     }
-
     public ObservableInt getEmptyLayoutVisible() {
         return _emptyViewVisible;
     }
+
 
     public void setCurrentLocation(Location location) {
 
@@ -101,6 +121,7 @@ public class PlacesViewModel extends AndroidViewModel {
             }
     }
 
+    /*
     public void onSwipeToRefreshCalled() {
         // The user wants to refresh the list of pizza places
         // We want to make the request with an updated location, so let's request that
@@ -108,27 +129,32 @@ public class PlacesViewModel extends AndroidViewModel {
     //    _swipedToRefresh.setValue(true);
         _locationRequested.setValue(true);
     }
-
+*/
 
     public void onFABRefreshCalled() {
         _locationRequested.setValue(true);
     }
 
-    public void refreshPizzaPlaces(Location location) {
-        if (_currentLocation.getValue() != null) {
-            loadDataFromWebService(_currentLocation.getValue(), _pizzaPlaces);
-        }
-    }
-
     //-------------------------------------------------------------------------
     // Private class methods
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public void refreshPizzaPlaces(Location location) {
+        if (location != null) {
+            loadDataFromWebService(location, _pizzaPlaces);
+        }
+    }
 
     private void loadDataFromWebService(Location location, MutableLiveData<List<PizzaPlace>> data) {
         // We need to call the WebService from a background thread
         // Volley will return the results in the foreground
 
-        setProgressVisibility(true);
-        new LoadDataTask(data).execute(location);
+        _isInProgress.set(true);
+        if (_webService == null) {
+            _webService = new WebService(getApplication().getApplicationContext());
+        }
+
+        new LoadDataTask(data, _isInProgress, _emptyViewVisible, _recyclerViewVisible, _webService).execute(location);
     }
 
     private void setProgressVisibility(boolean inProgress) {
@@ -136,7 +162,7 @@ public class PlacesViewModel extends AndroidViewModel {
             // If the user swiped to refresh, the swipe layout has it's own progress bar
             // don't show it again
         //    if (!_swipedToRefresh.getValue()) {
-                _progressVisible.set(View.VISIBLE);
+                _progressViewVisible.set(View.VISIBLE);
         //    }
         }
         else {
@@ -144,25 +170,39 @@ public class PlacesViewModel extends AndroidViewModel {
        //         _swipedToRefresh.setValue(false);
        //     }
         //    else {
-                _progressVisible.set(View.GONE);
+                _progressViewVisible.set(View.GONE);
         //    }
         }
     }
     //-------------------------------------------------------------------------
     // Private helper classes
 
-     private class LoadDataTask extends AsyncTask<Location, Void, Void> implements ResponseHandler<JSONObject> {
+     private static class LoadDataTask extends AsyncTask<Location, Void, Void> implements ResponseHandler<JSONObject> {
 
         private MutableLiveData<List<PizzaPlace>> _data;
-        private LoadDataTask(MutableLiveData<List<PizzaPlace>> data) {
+        private ObservableBoolean _progressVisibilityUpdater;
+        private ObservableInt _emptyViewVisibilityUpdater;
+        private ObservableInt _notEmptyViewVisibilityUpdater;
+        private WebService _theWebService;
+        private String LOG_TAG = getClass().getName();
+
+         private LoadDataTask(MutableLiveData<List<PizzaPlace>> data,
+                              ObservableBoolean progressVisibilityUpdater,
+                              ObservableInt emptyViewVisibilityUpdater,
+                              ObservableInt notEmptyViewVisibilityUpdater,
+                              WebService webService) {
             _data = data;
+            _progressVisibilityUpdater = progressVisibilityUpdater;
+            _emptyViewVisibilityUpdater = emptyViewVisibilityUpdater;
+            _notEmptyViewVisibilityUpdater = notEmptyViewVisibilityUpdater;
+            _theWebService = webService;
         }
 
         @Override
         protected Void doInBackground(Location... params) {
             if (params.length == 1) {
                 Location location = params[0];
-                _webService.refreshPizzaPlaces(location, this);
+                _theWebService.refreshPizzaPlaces(location, this);
             }
             return null;
         }
@@ -173,7 +213,8 @@ public class PlacesViewModel extends AndroidViewModel {
             // We should alert the user if this is an error they can do anything about
 
             // Stop displaying progress
-            setProgressVisibility(false);
+            _progressVisibilityUpdater.set(false);
+            //setProgressVisibility(false);
             Log.d(LOG_TAG, error.getLocalizedMessage(), error.getCause());
         }
 
@@ -197,15 +238,16 @@ public class PlacesViewModel extends AndroidViewModel {
                 _data.setValue(pizzaPlaces);
 
                 // stop displaying progress
-                setProgressVisibility(false);
+               // setProgressVisibility(false);
+                _progressVisibilityUpdater.set(false);
 
                 if (pizzaPlaces.size() > 0) {
-                    _emptyViewVisible.set(View.GONE);
-                    _recyclerViewVisible.set(View.VISIBLE);
+                    _emptyViewVisibilityUpdater.set(View.GONE);
+                    _notEmptyViewVisibilityUpdater.set(View.VISIBLE);
                 }
                 else {
-                    _recyclerViewVisible.set(View.GONE);
-                    _emptyViewVisible.set(View.VISIBLE);
+                    _notEmptyViewVisibilityUpdater.set(View.GONE);
+                    _emptyViewVisibilityUpdater.set(View.VISIBLE);
                 }
             }
             catch (JSONException ex) {

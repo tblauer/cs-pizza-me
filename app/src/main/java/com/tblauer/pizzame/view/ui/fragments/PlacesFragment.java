@@ -1,19 +1,16 @@
 package com.tblauer.pizzame.view.ui.fragments;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
-import android.databinding.Observable;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -42,23 +39,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class PlacesFragment extends Fragment  {
-
+public class PlacesFragment extends Fragment {
 
     //---------------------------------------------------------------------------
     // Member variables
 
     private PlacesViewModel _viewModel = null;
     private SharedViewModel _sharedViewModel = null;
+    private PlacesFragmentLayoutBinding _fragmentBinding = null;
 
     private MyLocationListener _myLocationListener = null;
 
-    private PlacesFragmentLayoutBinding _fragmentBinding = null;
-    private final String LOG_TAG = getClass().getName();
-
     private PlacesListAdapter _placesListAdapter = null;
 
-    View _snackBarView = null;
+    private View _snackBarView = null;
 
     //---------------------------------------------------------------------------
     // Constructor
@@ -125,6 +119,7 @@ public class PlacesFragment extends Fragment  {
 
         setUpObservers();
     }
+
 
     @Override
     public void onStart() {
@@ -195,9 +190,7 @@ public class PlacesFragment extends Fragment  {
         _viewModel.getPizzaPlaces().observe(this, new Observer<List<PizzaPlace>>() {
             public void onChanged(List<PizzaPlace> places) {
                 // Tell the adapter the pizza places changed
-              //  PlacesListAdapter adapter = (PlacesListAdapter) _fragmentBinding.placesRecyclerView.getAdapter();
                 _placesListAdapter.setPlaces(places);
-             //   adapter.setPlaces(places);
             }
         });
 
@@ -227,10 +220,8 @@ public class PlacesFragment extends Fragment  {
     // Private Helper classes
 
 
-    // This isn't used anywhere but this Fragment, so just declare it in here
     private class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.PizzaPlaceViewHolder> {
         private List<PizzaPlace> _pizzaPlaces = new ArrayList<>();
-
         PlacesListAdapter() {
             super();
             setHasStableIds(true);
@@ -260,24 +251,15 @@ public class PlacesFragment extends Fragment  {
             return position;
         }
 
-   //     @Override
-  //      public int getItemViewType(int position) {
-  //          return 0;
-  //      }
 
         public void setPlaces(List<PizzaPlace> pizzaPlaces) {
-           // _pizzaPlaces.clear();
-           // _pizzaPlaces.addAll(pizzaPlaces);
             _pizzaPlaces = pizzaPlaces;
             notifyDataSetChanged();
-          // _fragmentBinding.executePendingBindings();
         }
 
         //---------------------------------------------------------------------
         // private ViewHolder class
 
-        // Try to pass in the sharedView model so I can make this class static
-        //
         class PizzaPlaceViewHolder extends RecyclerView.ViewHolder {
             private PlaceListItemBinding _binding;
 
@@ -286,14 +268,14 @@ public class PlacesFragment extends Fragment  {
                 _binding = binding;
                 // I cannot for the life of me get the onClick to work through databinding in the xml
                 // Do this for now and figure it out later
+                // Plus I can't make the class static (and avoid a memory leak if I have to set
+                // the SharedViewModel on it since the SharedViewModel is using the activities context
+                // to keep it alive for both fragments
                 _binding.placeItemTopView.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View view) {
                         int position = getLayoutPosition();
-                        LiveData<List<PizzaPlace>> pplaces = _viewModel.getPizzaPlaces();
-                        if (pplaces.getValue() != null) {
-                            PizzaPlace pplace = pplaces.getValue().get(position);
-                            binding.getSharedViewModel().onPizzaPlaceClicked(pplace);
-                        }
+                        PizzaPlace pplace = _pizzaPlaces.get(position);
+                        binding.getSharedViewModel().onPizzaPlaceClicked(pplace);
                     }
                 });
             }
@@ -301,7 +283,6 @@ public class PlacesFragment extends Fragment  {
             public void bindPlace(@NonNull PizzaPlace pplace) {
                 if (_binding.getPlaceItemViewModel() == null) {
                     PlaceItemViewModel placeItemViewModel = new PlaceItemViewModel(getResources());
-                  //  PlaceItemViewModel placeItemViewModel = ViewModelProviders.of(getActivity()).get(PlaceItemViewModel.class);
                     _binding.setPlaceItemViewModel(placeItemViewModel);
                 }
                 if (_binding.getSharedViewModel() == null) {
@@ -310,14 +291,17 @@ public class PlacesFragment extends Fragment  {
                 }
 
                 _binding.getPlaceItemViewModel().setPizzaPlace(pplace);
-              //  _binding.executePendingBindings();
-
             }
         }
     }
 
     // Ensuring we have a connection to GooglePlayServices
-    public class MyLocationListener implements  GoogleApiClient.ConnectionCallbacks,
+    // Sigh...
+    // Can switch this out now for the FusedLocationProviderClient
+    // It was advised not to use it by google wben I wrote this like 4 days ago
+    // A new version of google play services fixed it
+    //
+    private class MyLocationListener implements  GoogleApiClient.ConnectionCallbacks,
                                                 GoogleApiClient.OnConnectionFailedListener {
 
         private final String LOG_TAG = getClass().getName();
@@ -352,14 +336,11 @@ public class PlacesFragment extends Fragment  {
             return LocationServices.FusedLocationApi.getLastLocation(_googleApiClient);
         }
 
-
-
         //-------------------------------------------------------------------------
         // GoogleApi.ConnectionCallbacks implementation
 
         @Override
         public void onConnected(@Nullable Bundle bundle) {
-            //updatePizzaPlacesByMe();
             requestLocation();
         }
 
