@@ -1,7 +1,6 @@
 package com.tblauer.pizzame.view.ui.fragments;
 
 
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.databinding.DataBindingUtil;
@@ -22,10 +21,16 @@ import com.tblauer.pizzame.viewmodel.SharedViewModel;
 
 public class PlaceDetailsFragment extends Fragment {
 
+    //---------------------------------------------------------------------------
+    // Member variables
+
     private PlaceDetailsViewModel _viewModel = null;
     private SharedViewModel _sharedViewModel = null;
 
     private PlaceDetailsLayoutBinding _binding = null;
+
+    //---------------------------------------------------------------------------
+    // Constructor
 
     public PlaceDetailsFragment() {
         super();
@@ -48,9 +53,7 @@ public class PlaceDetailsFragment extends Fragment {
       //  _snackBarView = v;
 
         setHasOptionsMenu(false);
-
         displayHomeAsEnabled();
-        // Make this use the up arrow in the toolbar
 
         return v;
     }
@@ -77,16 +80,9 @@ public class PlaceDetailsFragment extends Fragment {
         super.onStart();
         setActionBarTitle(_viewModel.getName());
     }
-    private void setUpObservers() {
-        _sharedViewModel.getSelected().observe(this, new Observer<PizzaPlace>() {
-            public void onChanged(PizzaPlace pplace) {
-                // Tell the adapter the pizza places changed
-                _viewModel.setPizzaPlace(pplace);
-                _binding.notifyChange();
-                _binding.executePendingBindings();
-            }
-        });
-    }
+
+    //---------------------------------------------------------------------------
+    // Private class methods
 
     private void displayHomeAsEnabled() {
         if (getActivity() instanceof AppCompatActivity) {
@@ -105,5 +101,16 @@ public class PlaceDetailsFragment extends Fragment {
                 actionBar.setTitle(title);
             }
         }
+    }
+
+    private void setUpObservers() {
+        _sharedViewModel.getSelected().observe(this, new Observer<PizzaPlace>() {
+            public void onChanged(PizzaPlace pplace) {
+                // Tell the adapter the pizza places changed
+                _viewModel.setPizzaPlace(pplace);
+                _binding.notifyChange();
+                _binding.executePendingBindings();
+            }
+        });
     }
 }

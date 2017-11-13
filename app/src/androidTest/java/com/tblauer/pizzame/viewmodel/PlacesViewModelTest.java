@@ -229,6 +229,8 @@ public class PlacesViewModelTest {
     @Test
     public void onFABRefreshCalled() throws Exception {
         when (mockApplication.getApplicationContext()).thenReturn(mockAppContext);
+
+        // TODO Finish this test
 /*
         mockViewModel = Mockito.mock(PlacesViewModel.class);
         doAnswer(new Answer() {

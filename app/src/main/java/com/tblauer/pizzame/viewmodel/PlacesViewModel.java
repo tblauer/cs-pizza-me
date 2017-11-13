@@ -37,7 +37,6 @@ public class PlacesViewModel extends AndroidViewModel {
 
     private WebService _webService;
 
-    // May have to create a new object that's LiveData that contains the items I want to make visible
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     public final ObservableInt _progressViewVisible = new ObservableInt(View.GONE);
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)

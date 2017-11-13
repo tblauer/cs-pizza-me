@@ -39,6 +39,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+// TODO
+// Add a better initial UI for when we don't have a location yet
+// Right now it just shows the empty list UI, which isn't pretty at all
+// Not a good first view of the app
+// Add something to the viewmodel to change the visibility when we get a location
 public class PlacesFragment extends Fragment {
 
     //---------------------------------------------------------------------------
@@ -174,17 +179,6 @@ public class PlacesFragment extends Fragment {
         }
     }
 
-    /*
-    private void updatePizzaPlacesByMe() {
-        if (PermissionUtils.hasPermission(getContext(), PermissionUtils.WhichPermission.REQUEST_LOCATION)) {
-            Location location = _myLocationListener.retrieveLastLocation();
-            if (location != null) {
-                _viewModel.refreshPizzaPlaces(location);
-            }
-        }
-    }
-    */
-
     private void setUpObservers() {
         // Set up listeners on the view model
         _viewModel.getPizzaPlaces().observe(this, new Observer<List<PizzaPlace>>() {
@@ -220,6 +214,11 @@ public class PlacesFragment extends Fragment {
     // Private Helper classes
 
 
+    // TODO
+    // Try to pass in SharedVIewModel and Resources to the constructor
+    // pass them to the ViewModelHolder,
+    //      Don't *think* I need to create a new SharedViewModel for each view holder
+    // If that works, this does not need to be an inner class, and I can make the ViewHolder class static
     private class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.PizzaPlaceViewHolder> {
         private List<PizzaPlace> _pizzaPlaces = new ArrayList<>();
         PlacesListAdapter() {
@@ -260,7 +259,7 @@ public class PlacesFragment extends Fragment {
         //---------------------------------------------------------------------
         // private ViewHolder class
 
-        class PizzaPlaceViewHolder extends RecyclerView.ViewHolder {
+         class PizzaPlaceViewHolder extends RecyclerView.ViewHolder {
             private PlaceListItemBinding _binding;
 
             PizzaPlaceViewHolder(PlaceListItemBinding binding) {
@@ -268,9 +267,7 @@ public class PlacesFragment extends Fragment {
                 _binding = binding;
                 // I cannot for the life of me get the onClick to work through databinding in the xml
                 // Do this for now and figure it out later
-                // Plus I can't make the class static (and avoid a memory leak if I have to set
-                // the SharedViewModel on it since the SharedViewModel is using the activities context
-                // to keep it alive for both fragments
+                // TODO Try this again
                 _binding.placeItemTopView.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View view) {
                         int position = getLayoutPosition();
@@ -296,10 +293,7 @@ public class PlacesFragment extends Fragment {
     }
 
     // Ensuring we have a connection to GooglePlayServices
-    // Sigh...
-    // Can switch this out now for the FusedLocationProviderClient
-    // It was advised not to use it by google wben I wrote this like 4 days ago
-    // A new version of google play services fixed it
+    // TODO Switch to use FusedLocationProviderClient
     //
     private class MyLocationListener implements  GoogleApiClient.ConnectionCallbacks,
                                                 GoogleApiClient.OnConnectionFailedListener {
@@ -318,8 +312,10 @@ public class PlacesFragment extends Fragment {
         //-------------------------------------------------------------------------
         // Class methods
 
-        // This method should not be called unless we have been granted permissions for
-        // FINE_LOCATION, or it will throw a SecurityException
+        /**
+         * This method should not be called unless we have been granted permissions for
+         * location, or it will throw a SecurityException
+         */
         public Location retrieveLastLocation() throws SecurityException {
             // This says it deprecated, but in the Google documentation states:
             // Warning: Please continue using the FusedLocationProviderApi class and
