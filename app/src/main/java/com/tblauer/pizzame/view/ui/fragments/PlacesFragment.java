@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -95,17 +96,17 @@ public class PlacesFragment extends Fragment {
         displayHomeAsDisabled();
 
         // Set up the swipe refresher to make a new request for data
-        /*
+
         SwipeRefreshLayout swipe = _fragmentBinding.swipeRefreshLayout;
         swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 if (_fragmentBinding.getPlacesViewModel() != null) {
-                    _fragmentBinding.getPlacesViewModel().onSwipeToRefreshCalled();
+                    _viewModel.onSwipeToRefreshCalled();
                 }
             }
         });
-*/
+
         return v;
     }
 
@@ -195,7 +196,7 @@ public class PlacesFragment extends Fragment {
                 }
             }
         });
-/*
+
         _viewModel.getSwipedToRefresh().observe(this, new Observer<Boolean>() {
             public void onChanged(Boolean swipedToRefresh) {
                 // If the value changed to false, then stop showing that the view is refreshing
@@ -206,7 +207,6 @@ public class PlacesFragment extends Fragment {
                 }
             }
         });
-        */
     }
 
 
