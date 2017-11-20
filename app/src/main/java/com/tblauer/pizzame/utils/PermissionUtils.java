@@ -2,7 +2,6 @@ package com.tblauer.pizzame.utils;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -133,12 +132,6 @@ public class PermissionUtils {
 
     /**
      * Utility method to request a needed permission FROM an activity.
-     *
-     * There SHOULD be one of these for a fragment also, but currently we are using v4.app.Fragment
-     * and the FragmentCompat version of requestPermissions takes a app.Fragment..  So until we switch
-     * from using v4.app.Fragments, we will handle the fragments getting permission requests results
-     * through the permissions event manager
-     *
      *
      * @param activity Activity object.
      * @param view Top level view used as a parameter for Snackbar messages. If null, no messages will be displayed.

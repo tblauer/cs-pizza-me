@@ -1,9 +1,12 @@
 package com.tblauer.pizzame.view.ui.fragments;
 
+import android.app.Activity;
 import android.arch.lifecycle.Observer;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.location.Location;
@@ -24,18 +27,32 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.tblauer.pizzame.R;
 import com.tblauer.pizzame.databinding.PlaceListItemBinding;
 import com.tblauer.pizzame.databinding.PlacesFragmentLayoutBinding;
 import com.tblauer.pizzame.model.PizzaPlace;
+import com.tblauer.pizzame.utils.AppIntents;
 import com.tblauer.pizzame.utils.PermissionUtils;
 import com.tblauer.pizzame.view.ui.SpacingItemDecoration;
 import com.tblauer.pizzame.viewmodel.PlaceItemViewModel;
 import com.tblauer.pizzame.viewmodel.PlacesViewModel;
 import com.tblauer.pizzame.viewmodel.SharedViewModel;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,9 +71,8 @@ public class PlacesFragment extends Fragment {
     private SharedViewModel _sharedViewModel = null;
     private PlacesFragmentLayoutBinding _fragmentBinding = null;
 
-    private MyLocationListener _myLocationListener = null;
-
     private PlacesListAdapter _placesListAdapter = null;
+    private FusedLocationProviderClient _locationProviderClient = null;
 
     private View _snackBarView = null;
 
@@ -67,7 +83,6 @@ public class PlacesFragment extends Fragment {
         super();
         // Required empty public constructor
     }
-
 
     //---------------------------------------------------------------------------
     // Fragment overrides
@@ -96,7 +111,6 @@ public class PlacesFragment extends Fragment {
         displayHomeAsDisabled();
 
         // Set up the swipe refresher to make a new request for data
-
         SwipeRefreshLayout swipe = _fragmentBinding.swipeRefreshLayout;
         swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -114,7 +128,7 @@ public class PlacesFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        _myLocationListener = new MyLocationListener(getContext());
+        _locationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
 
         _viewModel = ViewModelProviders.of(getActivity()).get(PlacesViewModel.class);
         // Use the activity instead of the fragment as the ViewModels LifeCycle so
@@ -130,13 +144,13 @@ public class PlacesFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        _myLocationListener.connect();
-        requestLocation();
+        if (_viewModel.getLocationRequested().getValue()) {
+            requestLocation();
+        }
     }
 
     @Override
     public void onStop() {
-        _myLocationListener.disconnect();
         super.onStop();
     }
 
@@ -155,6 +169,7 @@ public class PlacesFragment extends Fragment {
         }
     }
 
+
     //-------------------------------------------------------------------------
     // Private methods
 
@@ -168,10 +183,17 @@ public class PlacesFragment extends Fragment {
         }
     }
 
-    private void requestLocation() {
+    private void requestLocation() throws SecurityException {
+        //  The FusedLocationProviderClient will ensure the GoogleApiClient is connected
+        // before making the request so we don't need to do all of that prior to requesting
+        // the last location
         if (PermissionUtils.hasPermission(getContext(), PermissionUtils.WhichPermission.REQUEST_LOCATION)) {
-            Location location = _myLocationListener.retrieveLastLocation();
-            _viewModel.setCurrentLocation(location);
+            Task<Location> task = _locationProviderClient.getLastLocation();
+            task.addOnSuccessListener(new OnSuccessListener<Location>() {
+               public void onSuccess(Location location) {
+                   _viewModel.setCurrentLocation(location);
+               }
+            });
         }
         else {
             PermissionUtils.requestPermissionsFromFragment(this, _snackBarView,
@@ -181,7 +203,14 @@ public class PlacesFragment extends Fragment {
     }
 
     private void setUpObservers() {
-        // Set up listeners on the view model
+        // TODO
+        // Replace the anonymous observers with named ones
+        // Add them and then remove them in onDestroyView
+        // Or unsubscribe right before subscribing again.
+        // I haven't noticed it yet, but there may be a bug where multiple listeners get added
+        // during onActivityCreated, but they don't get removed when fragment is detached and reattached
+        // https://github.com/googlesamples/android-architecture-components/issues/47
+
         _viewModel.getPizzaPlaces().observe(this, new Observer<List<PizzaPlace>>() {
             public void onChanged(List<PizzaPlace> places) {
                 // Tell the adapter the pizza places changed
@@ -252,7 +281,7 @@ public class PlacesFragment extends Fragment {
 
 
         public void setPlaces(List<PizzaPlace> pizzaPlaces) {
-            _pizzaPlaces = pizzaPlaces;
+            _pizzaPlaces = pizzaPlaces == null ? new ArrayList<PizzaPlace>() : pizzaPlaces;
             notifyDataSetChanged();
         }
 
@@ -295,13 +324,18 @@ public class PlacesFragment extends Fragment {
     // Ensuring we have a connection to GooglePlayServices
     // TODO Switch to use FusedLocationProviderClient
     //
+
+    /*
     private class MyLocationListener implements  GoogleApiClient.ConnectionCallbacks,
                                                 GoogleApiClient.OnConnectionFailedListener {
 
+        private WeakReference<Context> _wrFragmentContext = new WeakReference<Context>(null);
         private final String LOG_TAG = getClass().getName();
         private GoogleApiClient _googleApiClient;
 
         public MyLocationListener(Context context) {
+            _wrFragmentContext = new WeakReference(context);
+
             _googleApiClient = new GoogleApiClient.Builder(context)
                             .addConnectionCallbacks(this)
                             .addOnConnectionFailedListener(this)
@@ -312,10 +346,10 @@ public class PlacesFragment extends Fragment {
         //-------------------------------------------------------------------------
         // Class methods
 
-        /**
-         * This method should not be called unless we have been granted permissions for
-         * location, or it will throw a SecurityException
-         */
+
+         // This method should not be called unless we have been granted permissions for
+         // location, or it will throw a SecurityException
+
         public Location retrieveLastLocation() throws SecurityException {
             // This says it deprecated, but in the Google documentation states:
             // Warning: Please continue using the FusedLocationProviderApi class and
@@ -337,7 +371,8 @@ public class PlacesFragment extends Fragment {
 
         @Override
         public void onConnected(@Nullable Bundle bundle) {
-            requestLocation();
+            checkLocationSettings();
+            //requestLocation();
         }
 
         @Override
@@ -352,6 +387,17 @@ public class PlacesFragment extends Fragment {
         public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
             // Just log it for now, can do a bunch of stuff if it's resolvable
             // with the connectionResult
+            if (connectionResult.hasResolution()) {
+
+                try {
+                    connectionResult.startResolutionForResult(getActivity(), LOCATION_RESOLUTION);
+                }
+                catch (IntentSender.SendIntentException ex) {
+                    Log.e(LOG_TAG, ex.getMessage(), ex);
+                }
+               // startIntentSenderForResult(connectionResult.getResolution().getIntentSender(), LOCATION_RESOLUTION, connectionResult.getResolution(), 0, 0, 0, null);
+
+            }
             Log.e(LOG_TAG, "Failed to connect to googleAPIClient due to " + connectionResult.getErrorMessage());
         }
 
@@ -369,5 +415,50 @@ public class PlacesFragment extends Fragment {
                 _googleApiClient.disconnect();
             }
         }
+
+        private void checkLocationSettings() {
+            if (_wrFragmentContext.get() != null) {
+                LocationRequest locationRequest = new LocationRequest();
+                locationRequest.setInterval(1000);
+                locationRequest.setFastestInterval(5000);
+                locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+                LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                        .addLocationRequest(locationRequest);
+
+                SettingsClient client = LocationServices.getSettingsClient(_wrFragmentContext.get());
+                Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+                task.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception ex) {
+                        if (ex instanceof ApiException) {
+                            int statusCode = ((ApiException) ex).getStatusCode();
+                            switch (statusCode) {
+                                case CommonStatusCodes.RESOLUTION_REQUIRED:
+                                    try {
+                                        ResolvableApiException resolvable = (ResolvableApiException) ex;
+                                        resolvable.startResolutionForResult(getActivity(), REQUEST_CHECK_LOCATION_SETTINGS);
+                                    }
+                                    catch (IntentSender.SendIntentException sendEx) {
+                                        Log.e(LOG_TAG, sendEx.getMessage(), sendEx);
+                                    }
+                                    break;
+                                case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                                    // We don't have a way to fix this so there's no need showing anything
+                                    break;
+                            }
+                        }
+                    }
+                });
+                task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
+                    @Override
+                    public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                        locationSettingsResponse.getLocationSettingsStates().
+                        requestLocation();
+                    }
+                });
+            }
+        }
     }
+    */
 }

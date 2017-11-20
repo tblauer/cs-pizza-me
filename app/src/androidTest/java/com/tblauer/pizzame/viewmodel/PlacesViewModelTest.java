@@ -4,7 +4,6 @@ import android.arch.core.executor.testing.InstantTaskExecutorRule;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.databinding.Observable;
-import android.databinding.ObservableBoolean;
 import android.databinding.ObservableInt;
 import android.location.Location;
 import android.support.test.runner.AndroidJUnit4;
@@ -25,8 +24,6 @@ import org.mockito.stubbing.Answer;
 import android.support.test.runner.AndroidJUnit4;
 import android.test.mock.MockApplication;
 import android.test.mock.MockContext;
-import android.test.mock.MockPackageManager;
-import android.test.mock.MockResources;
 import android.view.View;
 
 import com.tblauer.pizzame.model.PizzaPlace;
@@ -105,7 +102,7 @@ public class PlacesViewModelTest {
         LiveData<Boolean> myObj = testViewModel.getLocationRequested();
         myObj.observeForever(mockBooleanObserver);
 
-        testViewModel._locationRequested.setValue(true);
+        testViewModel.setLocationRequested(true);
         verify(mockBooleanObserver).onChanged(Boolean.TRUE);
     }
 
@@ -121,7 +118,9 @@ public class PlacesViewModelTest {
         observableVal.addOnPropertyChangedCallback(callback);
 
         // Set the value on the object
-        testViewModel._progressViewVisible.set(View.VISIBLE);
+        // The default value in the view model is GONE, so just change it to something different
+        testViewModel.setProgressViewVisible(View.VISIBLE);
+
         // Verify that the onPropertyChange callback got called on the observablePP
         verify(callback).onPropertyChanged(any(ObservableInt.class), anyInt());
     }
@@ -133,12 +132,12 @@ public class PlacesViewModelTest {
 
         PlacesViewModel testViewModel = new PlacesViewModel(mockApplication);
 
-        ObservableInt observableVal = testViewModel.getProgressViewVisible();
         // Set the value on the object
-        testViewModel._progressViewVisible.set(View.GONE);
+        testViewModel.setProgressViewVisible(View.GONE);
         assertThat(testViewModel.getProgressViewVisible().get(), equalTo(View.GONE));
+
         // Make sure it gets changed
-        testViewModel._progressViewVisible.set(View.VISIBLE);
+        testViewModel.setProgressViewVisible(View.VISIBLE);
         assertThat(testViewModel.getProgressViewVisible().get(), equalTo(View.VISIBLE));
     }
 
@@ -154,7 +153,9 @@ public class PlacesViewModelTest {
         observableVal.addOnPropertyChangedCallback(callback);
 
         // Set the value on the object
-        testViewModel._recyclerViewVisible.set(View.INVISIBLE);
+        // The default value in the view model is GONE, so just change it to something different
+        testViewModel.setRecyclerViewVisibility(View.VISIBLE);
+
         // Verify that the onPropertyChange callback got called on the observablePP
         verify(callback).onPropertyChanged(any(ObservableInt.class), anyInt());
     }
@@ -164,12 +165,12 @@ public class PlacesViewModelTest {
         when (mockApplication.getApplicationContext()).thenReturn(mockAppContext);
         PlacesViewModel testViewModel = new PlacesViewModel(mockApplication);
 
-        ObservableInt observableVal = testViewModel.getRecyclerViewVisible();
         // Set the value on the object
-        testViewModel._recyclerViewVisible.set(View.GONE);
+        testViewModel.setRecyclerViewVisibility(View.GONE);
         assertThat(testViewModel.getRecyclerViewVisible().get(), equalTo(View.GONE));
+
         // Make sure it gets changed
-        testViewModel._recyclerViewVisible.set(View.VISIBLE);
+        testViewModel.setRecyclerViewVisibility(View.VISIBLE);
         assertThat(testViewModel.getRecyclerViewVisible().get(), equalTo(View.VISIBLE));
     }
 
@@ -184,7 +185,9 @@ public class PlacesViewModelTest {
         observableVal.addOnPropertyChangedCallback(callback);
 
         // Set the value on the object
-        testViewModel._emptyViewVisible.set(View.INVISIBLE);
+        // The default value in the view model is VISIBLE, so change it to somehtin different
+        testViewModel.setEmptyLayoutVisibility(View.INVISIBLE);
+
         // Verify that the onPropertyChange callback got called on the observablePP
         verify(callback).onPropertyChanged(any(ObservableInt.class), anyInt());
     }
@@ -195,12 +198,12 @@ public class PlacesViewModelTest {
 
         PlacesViewModel testViewModel = new PlacesViewModel(mockApplication);
 
-        ObservableInt observableVal = testViewModel.getEmptyLayoutVisible();
         // Set the value on the object
-        testViewModel._emptyViewVisible.set(View.GONE);
+        testViewModel.setEmptyLayoutVisibility(View.GONE);
         assertThat(testViewModel.getEmptyLayoutVisible().get(), equalTo(View.GONE));
+
         // Make sure it gets changed
-        testViewModel._emptyViewVisible.set(View.VISIBLE);
+        testViewModel.setEmptyLayoutVisibility(View.VISIBLE);
         assertThat(testViewModel.getEmptyLayoutVisible().get(), equalTo(View.VISIBLE));
     }
 
@@ -209,15 +212,15 @@ public class PlacesViewModelTest {
         when (mockApplication.getApplicationContext()).thenReturn(mockAppContext);
         PlacesViewModel testViewModel = new PlacesViewModel(mockApplication);
         // Set this up initially so it wont call refreshPizzaPlaces
-        testViewModel._locationRequested.setValue(false);
-        testViewModel._pizzaPlaces.setValue(testPizzaPlaces);
+        testViewModel.setLocationRequested(false);
+        testViewModel.setPizzaPlaces(testPizzaPlaces);
 
         // Have to have an observer or no events will get fired
         // so add the mock observer
-        LiveData<Location> myObj = testViewModel._currentLocation;
+        LiveData<Location> myObj = testViewModel.getCurrentLocation();
         myObj.observeForever(mockLocationObserver);
 
-        testViewModel._currentLocation.setValue(testLocation);
+        testViewModel.setCurrentLocation(testLocation);
         verify(mockLocationObserver).onChanged(testLocation);
     }
 
