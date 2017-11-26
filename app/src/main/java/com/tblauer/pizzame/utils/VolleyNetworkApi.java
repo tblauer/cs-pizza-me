@@ -23,6 +23,9 @@ import java.util.concurrent.Executors;
 
 public class VolleyNetworkApi {
 
+    //-------------------------------------------------------------------------
+    // Member variables
+
     public enum HttpMethod {
         GET(Request.Method.GET),
         POST(Request.Method.POST);
@@ -35,6 +38,9 @@ public class VolleyNetworkApi {
     private RequestQueue _requestQueue;
 
     private ExecutorService _pipeline = Executors.newSingleThreadExecutor();
+
+    //-------------------------------------------------------------------------
+    // Constructor
 
     private VolleyNetworkApi(@NonNull File cacheDir) {
         Cache cache = new DiskBasedCache(cacheDir, 1024*1024);
@@ -52,6 +58,9 @@ public class VolleyNetworkApi {
             }
         return s_instance;
     }
+
+    //-------------------------------------------------------------------------
+    // Public class methods
 
     public Request<JSONObject> doJsonObjectRequest(HttpMethod methodType,
                                                    String url,
@@ -77,5 +86,4 @@ public class VolleyNetworkApi {
                                                         responseHandler);
         return _requestQueue.add(request);
     }
-
 }

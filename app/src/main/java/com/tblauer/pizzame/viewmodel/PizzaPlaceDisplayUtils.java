@@ -31,13 +31,7 @@ public class PizzaPlaceDisplayUtils {
 
     public static float getAverageRating(PizzaPlace pizzaPlace) {
         if (pizzaPlace != null) {
-            PizzaPlace.PlaceRating rating = pizzaPlace.getRating();
-            if (rating != null) {
-                float avg = rating.getAverageRating();
-                if (!Float.isNaN(avg)) {
-                    return avg;
-                }
-            }
+            return pizzaPlace.getAverageRating();
         }
         return 0.0f;
     }
@@ -48,20 +42,16 @@ public class PizzaPlaceDisplayUtils {
 
     public static String getFormattedNumRatingsStr(PizzaPlace pizzaPlace, @NonNull String formatStr) {
         if (pizzaPlace != null) {
-            PizzaPlace.PlaceRating rating = pizzaPlace.getRating();
-            if (rating != null) {
-                return String.format(formatStr,rating.getNumRatings());
-            }
+            int numRatings = pizzaPlace.getNumRatings();
+            return String.format(formatStr, numRatings);
         }
         return String.valueOf(0);
     }
 
     public static String getFormattedNumReviewsStr(PizzaPlace pizzaPlace, @NonNull String format) {
         if (pizzaPlace != null) {
-            PizzaPlace.PlaceRating rating = pizzaPlace.getRating();
-            if (rating != null) {
-                return String.format(format, rating.getNumReviews());
-            }
+           int numReviews = pizzaPlace.getNumReviews();
+           return String.format(format, numReviews);
         }
         return String.valueOf(0);
     }

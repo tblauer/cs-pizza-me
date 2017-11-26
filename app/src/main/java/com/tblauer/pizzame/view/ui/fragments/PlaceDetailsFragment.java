@@ -50,8 +50,6 @@ public class PlaceDetailsFragment extends Fragment {
 
         View v = _binding.getRoot();
 
-      //  _snackBarView = v;
-
         setHasOptionsMenu(false);
         displayHomeAsEnabled();
 

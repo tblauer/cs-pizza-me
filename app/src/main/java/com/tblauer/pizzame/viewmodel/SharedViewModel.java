@@ -13,7 +13,7 @@ import com.tblauer.pizzame.view.ui.activities.MainActivity;
 
 
 /**
- * This view model is shared between the PlacesFragment and the PlaceDetailsFrgment
+ * This view model is shared between the PlacesFragment and the PlaceDetailsFragment
  * It is used to share the selected item information
  */
 public class SharedViewModel extends AndroidViewModel {

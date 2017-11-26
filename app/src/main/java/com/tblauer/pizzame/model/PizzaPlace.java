@@ -85,6 +85,45 @@ public class PizzaPlace {
     public double getLongitude() { return _lon; }
     public float getDistance() { return _distance; }
     public String getBusinessUrl() { return _url; }
+
+    public float getAverageRating() {
+        if (_rating != null) {
+            float avg = _rating.getAverageRating();
+            if (!Float.isNaN(avg)) {
+                return avg;
+            }
+        }
+        return 0.0f;
+    }
+
+    public int getNumRatings() {
+        if (_rating != null) {
+            return _rating.getNumRatings();
+        }
+        return 0;
+    }
+
+    public int getNumReviews() {
+        if (_rating != null) {
+            return _rating.getNumReviews();
+        }
+        return 0;
+    }
+
+    public long getLastReviewDate() {
+        if (_rating != null) {
+            return _rating.getLastReviewDate();
+        }
+        return 0;
+    }
+
+    public String getLastReviewIntro() {
+        if (_rating != null) {
+            return _rating.getLastReviewIntro();
+        }
+        return null;
+    }
+
     public PlaceRating getRating() { return _rating; }
 
     //-------------------------------------------------------------------------
